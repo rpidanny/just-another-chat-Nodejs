@@ -1,0 +1,15 @@
+{
+  "name": "Just Another Chat",
+  "subdomain": "chat",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "express": "*",
+    "socket.io": "*"
+  },
+  "version": "0.0.0-5",
+  "engines": {
+    "node": "0.10.x"
+  }
+}

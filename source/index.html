@@ -1,0 +1,204 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Just Another Chat</title>
+
+    <script src="js/alertify.min.js"></script>
+    <link rel="stylesheet" href="css/alertify.core.css" />
+    <link rel="stylesheet" href="css/alertify.default.css" />
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+
+    <link rel="stylesheet" href="css/flipclock.css">
+    <script src="js/jquery-1.11.1.js"></script>
+    <script src="js/flipclock.min.js"></script>
+   <!-- <style>
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      body { font: 20px Helvetica, Arial; }
+      form { background: #000; padding: 3px; position: fixed; bottom: 0; width: 100%; }
+      form input { border: 0; padding: 10px; width: 90%; margin-right: .5%; }
+      form button { width: 9%; background: rgb(130, 224, 255); border: none; padding: 10px; }
+      #messages { list-style-type: none; margin: 0; padding: 0; padding-top: 30px }
+      #messages li { padding: 5px 10px; }
+      #messages li:nth-child(odd) { background: #eee; }
+      #userHeader{position: fixed;right:0;}
+    </style>
+-->
+    <style>
+      *, *:before, *:after {
+        -moz-box-sizing: border-box;
+        -webkit-box-sizing: border-box;
+        box-sizing: border-box;
+      }
+       body { font: 20px Helvetica, Arial; }
+       /*#messages { float: left; padding-top: 10px; padding-bottom: 50px overflow:auto; min-height: 90% }*/
+       #messageDisplay{padding-top: 10px; overflow:auto; padding-bottom: 30px; height:80vh; width: 80%; border: 1px solid #eee; border-radius:5px;
+        background-color: #E8E8E8;
+      }
+       #body{padding-top: 70px;}
+       #title{font: 30px}
+       #connectedUsersDiv{ width: 15%; position:absolute;
+         right:4%;
+         top  :93px;
+        }
+
+       #activeUserBox{ width: 15%; position:absolute;
+         right:4%;
+         top  :283px;
+        }
+      .clock{
+        zoom: 0.5;
+        -moz-transform: scale(0.5)
+      }
+    </style>
+
+  </head>
+  <body>
+  <!--//Fixed top header... -->
+    <nav class="navbar navbar-default navbar-fixed-top" role="navigation">
+      <div class="container-fluid">
+
+        <div class="navbar-header">        
+          <ul class="nav navbar-nav navbar-left">
+             <!-- <li><div class="clock" style="margin:2em;"></div></li>-->
+              <li><a><span id="title">Just Another Chat</span></a></li>
+            </ul>
+        </div>
+
+            <ul class="nav navbar-nav navbar-right">
+              <li class="active" onclick="fxAboutDeveloper()"><a href="#">About Developer <span class="sr-only">(current)</span></a></li>
+              <li><a href="http://github.com/rpidanny">GitHub</a></li>
+            </ul>
+
+          </div><!-- /.navbar-collapse -->
+      </div><!-- /.container -->
+    </nav>
+
+    <div id="body" class="container-fluid">
+
+      <div id="messageDisplay"><ul id="messages" class="list-group"></ul></div>
+      <div id="connectedUsersDiv">
+      Online Users :
+      <ul id="connectedUsers"></ul>
+      </div>
+      
+      
+
+    </div>
+    <nav class="navbar navbar-default navbar-fixed-bottom" role="navigation">
+    <div class="container-fluid">
+        
+            <div class="label-w">
+
+            <form class="navbar-form navbar-left" role="search" id="inputForm">
+                <div class="form-group">
+                  <span class="glyphicon glyphicon-text-height"></span>
+                  <input id="m" type="text" autocomplete="off" class="form-control" placeholder="Enter Message..." style="width:80%; display:inline" size="40">
+                </div>
+
+                <div class="btn-group">
+                <button type="submit" class="btn btn-danger" >Send</button>                
+                </div>
+
+              </form>
+              </div>
+
+              <ul class="nav navbar-nav navbar-right">
+                <li><a href="#">Logged in as : </a></li>
+                <li><a href="#"><span id="userName"></span></a></li>
+              </ul>
+    </div> <!-- Container.... -->
+</nav>
+
+    
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+     
+
+     var usernae="annonomus";
+
+      var socket = io();
+      $('form').submit(function(){
+        socket.emit('chat message', $('#m').val());
+        $('#m').val('');
+        scrollBottomFill();
+        return false;
+      });
+
+      socket.on('chat message', function(msg){
+        $('#messages').append($('<li class="list-group-item">').text(msg));
+      });
+
+      socket.on('newUserAllert', function(msg){
+        alertify.success(msg+" Joined The Chat Room.");
+      });
+
+      socket.on('userLeftAllert', function(msg){
+        alertify.error(msg+" Left The Chat Room.");
+      });
+
+      socket.on('updateActiveUsers', function(msg){
+      //  var myString = $('<li id ="activeUsers" class="list-group-item">').html('</span>').text(msg);
+        $('#connectedUsers').append($('<li class="list-group-item">').text('• '+msg));
+      });
+
+      socket.on('clearActiveUsers', function(msg){
+        $('#connectedUsers').empty();
+      });
+
+ 
+
+      socket.on('activeUser', function(msg){ 
+        //$('#TokenUser').empty();
+        //$('#TokenUser').append($('<b>').text(msg));
+        $('#TokenUser').html('<b>'+msg+'</b>');
+      });
+
+
+
+      socket.on('userApprove', function(msg){
+        if(msg=="#Match"){
+          alertify.error("User Name Already In Use. Please Choose a different User Name");
+          getUserName();
+
+        }
+        else{
+          alertify.success("Successfully Connected to the Chat Server.");
+          alertify.success("Welcome "+msg);
+          document.getElementById('userName').innerHTML = msg;
+        }
+      });
+
+    getUserName();
+    function getUserName(){
+
+           alertify.prompt("Please Enter Your Name.", function (e, str) {
+          if (e) {
+             username=str;
+             socket.emit('newUser',username);
+             
+          } else {
+              window.close();
+          }
+      }, null);
+
+    }
+
+
+   function scrollBottomFill() {
+    var wtf    = $('#messageDisplay');
+    var height = wtf[0].scrollHeight;
+    wtf.scrollTop(height);
+  }
+
+  function fxAboutDeveloper(){
+    alertify.alert("<img src=\"images/mypic.jpg\" width=\"200px\" class=\"img-circle\" alt=\"Me\"><br>My Name is Abhishek Maharjan. I'm currently studying Electronics and Communication Engineering.<br><a href=\"http://rpidanny.github.io\">More Info.</a>");
+  }
+
+
+  
+        
+  
+
+  </script>
+  </body>
+</html>

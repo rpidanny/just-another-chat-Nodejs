@@ -59,7 +59,7 @@
 
         <div class="navbar-header">        
           <ul class="nav navbar-nav navbar-left">
-             <!-- <li><div class="clock" style="margin:2em;"></div></li>-->
+              <li><div class="clock" style="margin:2em;"></div></li>
               <li><a><span id="title">Just Another Chat</span></a></li>
             </ul>
         </div>
@@ -74,13 +74,21 @@
     </nav>
 
     <div id="body" class="container-fluid">
-
+     
+      <!--class="nav navbar-nav navbar-right"-->
+      <!-- <ul class="">
+                <li><div id="messageDisplay"><ul id="messages" class="list-group"></ul></div></li>
+                <li><div id="connectedUsersDiv"><ul id="connectedUsers"><li>Test</li></ul></div></li>
+        </ul>-->
       <div id="messageDisplay"><ul id="messages" class="list-group"></ul></div>
       <div id="connectedUsersDiv">
       Online Users :
       <ul id="connectedUsers"></ul>
       </div>
-      
+      <div ="activeUserBox">
+      Current Active User :
+        <span id="TokenUser"></span>
+      </div>
       
 
     </div>
@@ -145,7 +153,17 @@
         $('#connectedUsers').empty();
       });
 
- 
+      socket.on('clearToken', function(msg){
+        $("#inputForm").hide();
+        alertify.error("Clear Token");
+
+        var clock = new FlipClock($('.clock'),10, {
+        clockFace: 'Counter',
+        countdown: true,
+        autoStart: true
+        });
+        
+      });
 
       socket.on('activeUser', function(msg){ 
         //$('#TokenUser').empty();
@@ -153,7 +171,10 @@
         $('#TokenUser').html('<b>'+msg+'</b>');
       });
 
-
+      socket.on('setToken', function(msg){
+        $("#inputForm").show();
+        alertify.success("Got TOken..");
+      });
 
       socket.on('userApprove', function(msg){
         if(msg=="#Match"){
